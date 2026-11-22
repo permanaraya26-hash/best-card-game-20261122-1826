@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>EMBERFALL — a card battler of four elements</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cpath d='M32 6 C38 18 50 22 50 38 a18 18 0 1 1 -36 0 C14 26 22 22 24 14 C28 20 30 20 32 6 Z' fill='%23ff6a2a'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<div id="app">
+  <!-- ============ TITLE SCENE ============ -->
+  <section id="scene-title" class="scene" aria-label="Title screen">
+    <div class="title-embers" aria-hidden="true"><span></span><span></span><span></span><span></span><span></span><span></span></div>
+    <div class="title-inner">
+      <p class="title-kicker">A CARD BATTLER OF FOUR ELEMENTS</p>
+      <h1 class="title-logo">EMBER<span>FALL</span></h1>
+      <p class="title-tag">Four elements. One deck. Outwit the Ashen Warden.</p>
+      <div class="title-cards" aria-hidden="true">
+        <div class="mini-card el-ember"><span class="mini-icon">▲</span><b>9</b><i>Ember</i></div>
+        <div class="mini-card el-tide"><span class="mini-icon">●</span><b>7</b><i>Tide</i></div>
+        <div class="mini-card el-gale"><span class="mini-icon">◆</span><b>8</b><i>Gale</i></div>
+        <div class="mini-card el-stone"><span class="mini-icon">■</span><b>6</b><i>Stone</i></div>
+      </div>
+      <button id="btn-start" class="btn-big" autofocus>▶ &nbsp;BEGIN THE DUEL</button>
+      <p class="title-hint">Mouse: click a card to play it &nbsp;·&nbsp; Keys: 1–7 select, Enter plays, B banks embers &amp; braces</p>
+      <div class="title-rules">
+        <div><b>⚔ ELEMENT WHEEL</b><span>Ember beats Gale · Gale beats Stone · Stone beats Tide · Tide beats Ember · +2 power</span></div>
+        <div><b>✦ SURGE CHAINS</b><span>Play the same element round after round — each link adds +1</span></div>
+        <div><b>⟡ ECHO &amp; RUN</b><span>Repeat a value for +3 Echo · three values in a row for +4 Run</span></div>
+        <div><b>♥ 20 LIFE</b><span>Win the trick, deal the difference. First to 0 life falls.</span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ TABLE SCENE ============ -->
+  <section id="scene-table" class="scene hidden" aria-label="Game table">
+    <header class="table-top">
+      <div class="brand">EMBER<span>FALL</span></div>
+      <div class="round-box">ROUND <b id="round-num">1</b><span id="phase-label">Choose a card</span></div>
+      <div class="top-buttons">
+        <button id="btn-sound" class="btn-small" title="Toggle sound (M)">♪ SOUND</button>
+        <button id="btn-quit" class="btn-small" title="Back to title (Esc)">✕ QUIT</button>
+      </div>
+    </header>
+
+    <!-- Opponent row -->
+    <div class="side opponent-side">
+      <div class="fighter opponent">
+        <div class="avatar">♜</div>
+        <div class="fighter-info">
+          <div class="fighter-name">ASHRA · THE ASHEN WARDEN</div>
+          <div class="life-bar"><div id="opp-life-fill" class="life-fill"></div><span id="opp-life-text">20 ♥</span></div>
+          <div class="ember-row">Embers <span id="opp-embers">●●●</span> <span id="opp-hand-count" class="hand-count">5 cards</span></div>
+        </div>
+      </div>
+      <div id="opp-hand" class="hand opp-hand" aria-label="Opponent hand"></div>
+      <div id="opp-intent" class="intent-box" aria-live="polite"></div>
+    </div>
+
+    <!-- Middle: played cards + log -->
+    <div class="middle">
+      <div class="played-zone">
+        <div class="played-slot" id="slot-opp"><span class="slot-label">WARDEN</span></div>
+        <div class="versus">VS</div>
+        <div class="played-slot" id="slot-you"><span class="slot-label">YOU</span></div>
+      </div>
+      <div id="round-result" class="round-result" aria-live="polite">Play a card to begin the round.</div>
+      <div class="wheel-box" aria-label="Element wheel">
+        <span class="wheel-title">ELEMENT WHEEL</span>
+        <span class="wheel-line"><i class="dot el-ember"></i>Ember <b>›</b> <i class="dot el-gale"></i>Gale <b>›</b> <i class="dot el-stone"></i>Stone <b>›</b> <i class="dot el-tide"></i>Tide <b>›</b> <i class="dot el-ember"></i>Ember</span>
+      </div>
+    </div>
+
+    <!-- Player row -->
+    <div class="side player-side">
+      <div class="fighter you">
+        <div class="avatar">♞</div>
+        <div class="fighter-info">
+          <div class="fighter-name">YOU · THE EMBERKEEPER</div>
+          <div class="life-bar"><div id="you-life-fill" class="life-fill"></div><span id="you-life-text">20 ♥</span></div>
+          <div class="ember-row">Embers <span id="you-embers">●●●</span> <span id="you-surge" class="surge"></span></div>
+        </div>
+      </div>
+      <div id="you-hand" class="hand you-hand" aria-label="Your hand"></div>
+      <div class="player-actions">
+        <button id="btn-bank" class="btn-action" title="Skip playing, gain 2 embers and brace for 2 less damage (B)">⬢ BANK +2 · BRACE −2</button>
+        <button id="btn-play" class="btn-action primary" disabled title="Play the selected card (Enter)">PLAY CARD ⏎</button>
+        <span id="play-hint" class="play-hint">Select a card from your hand</span>
+      </div>
+    </div>
+
+    <div id="log" class="log" aria-label="Duel log"></div>
+  </section>
+
+  <!-- ============ WIN SCENE ============ -->
+  <section id="scene-win" class="scene hidden" aria-label="Win screen">
+    <div class="end-inner win">
+      <div class="confetti" aria-hidden="true"><span>✦</span><span>●</span><span>◆</span><span>▲</span><span>■</span><span>✦</span><span>●</span><span>◆</span></div>
+      <p class="end-kicker">THE WARDEN'S FLAME GOES OUT</p>
+      <h1 class="end-title">VICTORY!</h1>
+      <p class="end-sub">The Emberfall is yours, Emberkeeper.<br>Ashra bows — the four elements answer to you now.</p>
+      <div class="end-stats">
+        <div><b id="win-rounds">0</b><span>rounds</span></div>
+        <div><b id="win-life">0 ♥</b><span>life left</span></div>
+        <div><b id="win-tricks">0</b><span>tricks won</span></div>
+        <div><b id="win-surge">0</b><span>best surge</span></div>
+      </div>
+      <button class="btn-big btn-again" data-again>↻ &nbsp;DUEL AGAIN</button>
+      <p class="title-hint">Press Enter to duel again</p>
+    </div>
+  </section>
+
+  <!-- ============ LOSS SCENE ============ -->
+  <section id="scene-loss" class="scene hidden" aria-label="Loss screen">
+    <div class="end-inner loss">
+      <div class="ashfall" aria-hidden="true"><span>·</span><span>·</span><span>·</span><span>·</span><span>·</span><span>·</span></div>
+      <p class="end-kicker">THE EMBERS SCATTER TO THE WIND</p>
+      <h1 class="end-title">DEFEAT</h1>
+      <p class="end-sub">Ashra, the Ashen Warden, keeps the fall.<br>Gather your embers and challenge her again.</p>
+      <div class="end-stats">
+        <div><b id="loss-rounds">0</b><span>rounds</span></div>
+        <div><b id="loss-life">0 ♥</b><span>Warden life left</span></div>
+        <div><b id="loss-tricks">0</b><span>tricks won</span></div>
+        <div><b id="loss-surge">0</b><span>best surge</span></div>
+      </div>
+      <button class="btn-big btn-again" data-again>↻ &nbsp;TRY AGAIN</button>
+      <p class="title-hint">Press Enter to try again</p>
+    </div>
+  </section>
+</div>
+<script type="module" src="game.js"></script>
+</body>
+</html>
